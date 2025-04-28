@@ -1,69 +1,275 @@
-// Замени на свой, чтобы получить независимый от других набор данных.
-// "боевая" версия инстапро лежит в ключе prod
 const personalKey = "prod";
 const baseHost = "https://webdev-hw-api.vercel.app";
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 
 export function getPosts({ token }) {
+  console.log("getPosts called with token:", token);
+  const headers = {};
+  if (token && token !== "Bearer undefined") {
+    headers.Authorization = token;
+  }
   return fetch(postsHost, {
     method: "GET",
+    headers,
+  })
+    .then((response) => {
+      console.log("getPosts response status:", response.status);
+      if (response.status === 401) {
+        throw new Error("Нет авторизации");
+      }
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(`Ошибка сервера: ${response.status} ${text}`);
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("getPosts data:", data);
+      return data.posts;
+    });
+}
+
+export function getUserPosts({ token, userId }) {
+  console.log("getUserPosts called with token:", token, "userId:", userId);
+  const headers = {};
+  if (token && token !== "Bearer undefined") {
+    headers.Authorization = token;
+  }
+  return fetch(`${postsHost}/user-posts/${userId}`, {
+    method: "GET",
+    headers,
+  })
+    .then((response) => {
+      console.log("getUserPosts response status:", response.status);
+      if (response.status === 401) {
+        throw new Error("Нет авторизации");
+      }
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(`Ошибка сервера: ${response.status} ${text}`);
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("getUserPosts data:", data);
+      return data.posts;
+    });
+}
+
+export function addPost({ token, description, imageUrl }) {
+  console.log("addPost called with:", { token, description, imageUrl });
+  return fetch(postsHost, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ description, imageUrl }),
+  })
+    .then((response) => {
+      console.log("addPost response status:", response.status);
+      if (response.status === 400) {
+        throw new Error("Некорректные данные поста");
+      }
+      if (response.status === 401) {
+        throw new Error("Нет авторизации");
+      }
+      return response.json();
+    });
+}
+
+export function likePost({ token, postId }) {
+  console.log("likePost called with:", { token, postId });
+  return fetch(`${postsHost}/${postId}/like`, {
+    method: "POST",
     headers: {
       Authorization: token,
     },
   })
     .then((response) => {
+      console.log("likePost response status:", response.status);
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
-
       return response.json();
-    })
-    .then((data) => {
-      return data.posts;
+    });
+}
+
+export function dislikePost({ token, postId }) {
+  console.log("dislikePost called with:", { token, postId });
+  return fetch(`${postsHost}/${postId}/dislike`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+    },
+  })
+    .then((response) => {
+      console.log("dislikePost response status:", response.status);
+      if (response.status === 401) {
+        throw new Error("Нет авторизации");
+      }
+      return response.json();
     });
 }
 
 export function registerUser({ login, password, name, imageUrl }) {
+  console.log("registerUser: Function called");
+  console.log("registerUser: Raw input values:", { login, password, name, imageUrl });
+  console.log("registerUser: Input types:", {
+    loginType: typeof login,
+    passwordType: typeof password,
+    nameType: typeof name,
+    imageUrlType: typeof imageUrl,
+  });
+
+  // Проверяем наличие и типы
+  if (login == null) {
+    console.error("registerUser: Login is null or undefined:", login);
+    throw new Error("Логин не может быть null или undefined");
+  }
+  if (password == null) {
+    console.error("registerUser: Password is null or undefined:", password);
+    throw new Error("Пароль не может быть null или undefined");
+  }
+  if (name == null) {
+    console.error("registerUser: Name is null or undefined:", name);
+    throw new Error("Имя не может быть null или undefined");
+  }
+  if (typeof login !== "string" || !login.trim()) {
+    console.error("registerUser: Invalid login:", login);
+    throw new Error("Логин должен быть непустой строкой");
+  }
+  if (typeof password !== "string" || !password.trim()) {
+    console.error("registerUser: Invalid password:", password);
+    throw new Error("Пароль должен быть непустой строкой");
+  }
+  if (typeof name !== "string" || !name.trim()) {
+    console.error("registerUser: Invalid name:", name);
+    throw new Error("Имя должно быть непустой строкой");
+  }
+  if (imageUrl && typeof imageUrl !== "string") {
+    console.error("registerUser: Invalid imageUrl:", imageUrl);
+    throw new Error("URL изображения должен быть строкой или пустым");
+  }
+
+  // Формируем тело запроса
+  const body = {
+    login: login.trim(),
+    password: password.trim(),
+    name: name.trim(),
+  };
+  if (imageUrl) {
+    body.imageUrl = imageUrl.trim();
+  }
+
+  console.log("registerUser: Request body:", body);
+
+  // Проверяем сериализацию
+  let jsonBody;
+  try {
+    jsonBody = JSON.stringify(body);
+    console.log("registerUser: JSON body:", jsonBody);
+  } catch (error) {
+    console.error("registerUser: JSON serialization error:", error);
+    throw new Error("Ошибка формирования JSON");
+  }
+
+  // Отправляем запрос
+  console.log("registerUser: Sending request...");
   return fetch(baseHost + "/api/user", {
     method: "POST",
-    body: JSON.stringify({
-      login,
-      password,
-      name,
-      imageUrl,
-    }),
-  }).then((response) => {
-    if (response.status === 400) {
-      throw new Error("Такой пользователь уже существует");
-    }
-    return response.json();
-  });
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+    },
+    body: jsonBody,
+  })
+    .then((response) => {
+      console.log("registerUser: Response status:", response.status);
+      if (response.status === 400) {
+        return response.json().then((data) => {
+          console.log("registerUser: Error response:", data);
+          throw new Error(data.error || "Ошибка регистрации");
+        });
+      }
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("registerUser: Error:", error);
+      throw error;
+    });
 }
 
 export function loginUser({ login, password }) {
+  console.log("loginUser called with:", { login, password });
   return fetch(baseHost + "/api/user/login", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       login,
       password,
     }),
-  }).then((response) => {
-    if (response.status === 400) {
-      throw new Error("Неверный логин или пароль");
-    }
-    return response.json();
-  });
+  })
+    .then((response) => {
+      console.log("loginUser response status:", response.status);
+      if (response.status === 400) {
+        return response.json().then((data) => {
+          throw new Error(data.error || "Неверный логин или пароль");
+        });
+      }
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("loginUser error:", error);
+      throw error;
+    });
 }
 
-// Загружает картинку в облако, возвращает url загруженной картинки
 export function uploadImage({ file }) {
+  console.log("uploadImage called with file:", file.name);
   const data = new FormData();
   data.append("file", file);
 
   return fetch(baseHost + "/api/upload/image", {
     method: "POST",
     body: data,
-  }).then((response) => {
-    return response.json();
-  });
+  })
+    .then((response) => {
+      console.log("uploadImage response status:", response.status);
+      if (response.status !== 200) {
+        throw new Error("Ошибка загрузки изображения");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("uploadImage data:", data);
+      return data; // Возвращаем весь объект { fileUrl }
+    });
+}
+
+export function verifyToken({ token }) {
+  console.log("verifyToken called with:", token);
+  return fetch(baseHost + "/api/user/me", {
+    method: "GET",
+    headers: {
+      Authorization: token,
+    },
+  })
+    .then((response) => {
+      console.log("verifyToken response status:", response.status);
+      return response.status === 200;
+    })
+    .catch((error) => {
+      console.error("verifyToken error:", error);
+      return false;
+    });
 }

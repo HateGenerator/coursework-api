@@ -1,4 +1,5 @@
-import { getPosts } from "./api.js";
+console.log("Starting index.js");
+import { getPosts, getUserPosts, verifyToken } from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -20,21 +21,39 @@ export let user = getUserFromLocalStorage();
 export let page = null;
 export let posts = [];
 
+console.log("Initial state:", { user, page, posts });
+
 const getToken = () => {
-  const token = user ? `Bearer ${user.token}` : undefined;
+  const token = user && user.token ? `Bearer ${user.token}` : undefined;
+  console.log("getToken called, token:", token);
   return token;
 };
 
 export const logout = () => {
+  console.log("Logging out");
   user = null;
   removeUserFromLocalStorage();
   goToPage(POSTS_PAGE);
 };
 
-/**
- * Включает страницу приложения
- */
+// Проверка токена при старте
+if (user && user.token) {
+  console.log("Verifying token at startup...");
+  verifyToken({ token: `Bearer ${user.token}` })
+    .then((isValid) => {
+      if (!isValid) {
+        console.log("Invalid token, logging out");
+        logout();
+      }
+    })
+    .catch((error) => {
+      console.error("Token verification error:", error);
+      logout();
+    });
+}
+
 export const goToPage = (newPage, data) => {
+  console.log("goToPage called with:", { newPage, data });
   if (
     [
       POSTS_PAGE,
@@ -45,47 +64,84 @@ export const goToPage = (newPage, data) => {
     ].includes(newPage)
   ) {
     if (newPage === ADD_POSTS_PAGE) {
-      /* Если пользователь не авторизован, то отправляем его на страницу авторизации перед добавлением поста */
+      console.log("Navigating to ADD_POSTS_PAGE, user:", user);
       page = user ? ADD_POSTS_PAGE : AUTH_PAGE;
-      return renderApp();
+      renderApp();
+      return;
     }
 
     if (newPage === POSTS_PAGE) {
+      console.log("Navigating to POSTS_PAGE");
       page = LOADING_PAGE;
       renderApp();
 
-      return getPosts({ token: getToken() })
+      console.log("Fetching posts...");
+      getPosts({ token: getToken() })
         .then((newPosts) => {
+          console.log("Posts fetched:", newPosts);
           page = POSTS_PAGE;
           posts = newPosts;
           renderApp();
         })
         .catch((error) => {
-          console.error(error);
-          goToPage(POSTS_PAGE);
+          console.error("Error fetching posts:", error);
+          page = POSTS_PAGE;
+          posts = [];
+          renderApp();
+          const appEl = document.getElementById("app");
+          const errorEl = document.createElement("div");
+          errorEl.className = "error-message";
+          errorEl.textContent = `Не удалось загрузить посты: ${error.message}. Попробуйте позже.`;
+          appEl.appendChild(errorEl);
         });
+      return;
     }
 
     if (newPage === USER_POSTS_PAGE) {
-      // @@TODO: реализовать получение постов юзера из API
-      console.log("Открываю страницу пользователя: ", data.userId);
-      page = USER_POSTS_PAGE;
-      posts = [];
-      return renderApp();
+      console.log("Navigating to USER_POSTS_PAGE with userId:", data?.userId);
+      page = LOADING_PAGE;
+      renderApp();
+
+      console.log("Fetching user posts...");
+      getUserPosts({ token: getToken(), userId: data.userId })
+        .then((newPosts) => {
+          console.log("User posts fetched:", newPosts);
+          page = USER_POSTS_PAGE;
+          posts = newPosts;
+          renderApp();
+        })
+        .catch((error) => {
+          console.error("Error fetching user posts:", error);
+          page = POSTS_PAGE;
+          posts = [];
+          renderApp();
+          const appEl = document.getElementById("app");
+          const errorEl = document.createElement("div");
+          errorEl.className = "error-message";
+          errorEl.textContent = `Не удалось загрузить посты пользователя: ${error.message}. Попробуйте позже.`;
+          appEl.appendChild(errorEl);
+        });
+      return;
     }
 
+    console.log("Navigating to page:", newPage);
     page = newPage;
     renderApp();
-
     return;
   }
 
-  throw new Error("страницы не существует");
+  console.error("Unknown page:", newPage);
+  const appEl = document.getElementById("app");
+  appEl.innerHTML = `<div class="page-container">Ошибка: неизвестная страница</div>`;
 };
 
 const renderApp = () => {
+  console.log("renderApp called, current page:", page);
   const appEl = document.getElementById("app");
+  console.log("appEl:", appEl);
+
   if (page === LOADING_PAGE) {
+    console.log("Rendering LOADING_PAGE");
     return renderLoadingPageComponent({
       appEl,
       user,
@@ -94,9 +150,11 @@ const renderApp = () => {
   }
 
   if (page === AUTH_PAGE) {
+    console.log("Rendering AUTH_PAGE");
     return renderAuthPageComponent({
       appEl,
       setUser: (newUser) => {
+        console.log("Setting new user:", newUser);
         user = newUser;
         saveUserToLocalStorage(user);
         goToPage(POSTS_PAGE);
@@ -107,27 +165,26 @@ const renderApp = () => {
   }
 
   if (page === ADD_POSTS_PAGE) {
+    console.log("Rendering ADD_POSTS_PAGE");
     return renderAddPostPageComponent({
       appEl,
       onAddPostClick({ description, imageUrl }) {
-        // @TODO: реализовать добавление поста в API
-        console.log("Добавляю пост...", { description, imageUrl });
+        console.log("Adding post:", { description, imageUrl });
         goToPage(POSTS_PAGE);
       },
     });
   }
 
-  if (page === POSTS_PAGE) {
+  if (page === POSTS_PAGE || page === USER_POSTS_PAGE) {
+    console.log("Rendering POSTS_PAGE or USER_POSTS_PAGE, posts:", posts);
     return renderPostsPageComponent({
       appEl,
     });
   }
 
-  if (page === USER_POSTS_PAGE) {
-    // @TODO: реализовать страницу с фотографиями отдельного пользвателя
-    appEl.innerHTML = "Здесь будет страница фотографий пользователя";
-    return;
-  }
+  console.error("Unknown page:", page);
+  appEl.innerHTML = `<div class="page-container">Ошибка: неизвестная страница</div>`;
 };
 
+console.log("Calling initial goToPage(POSTS_PAGE)");
 goToPage(POSTS_PAGE);
