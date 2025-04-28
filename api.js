@@ -124,7 +124,6 @@ export function registerUser({ login, password, name, imageUrl }) {
     imageUrlType: typeof imageUrl,
   });
 
-  // Проверяем наличие и типы
   if (login == null) {
     console.error("registerUser: Login is null or undefined:", login);
     throw new Error("Логин не может быть null или undefined");
@@ -141,9 +140,9 @@ export function registerUser({ login, password, name, imageUrl }) {
     console.error("registerUser: Invalid login:", login);
     throw new Error("Логин должен быть непустой строкой");
   }
-  if (typeof password !== "string" || !password.trim()) {
+  if (typeof password !== "string" || !password.trim() || password.length < 6) {
     console.error("registerUser: Invalid password:", password);
-    throw new Error("Пароль должен быть непустой строкой");
+    throw new Error("Пароль должен быть непустой строкой длиной не менее 6 символов");
   }
   if (typeof name !== "string" || !name.trim()) {
     console.error("registerUser: Invalid name:", name);
@@ -154,7 +153,6 @@ export function registerUser({ login, password, name, imageUrl }) {
     throw new Error("URL изображения должен быть строкой или пустым");
   }
 
-  // Формируем тело запроса
   const body = {
     login: login.trim(),
     password: password.trim(),
@@ -166,7 +164,6 @@ export function registerUser({ login, password, name, imageUrl }) {
 
   console.log("registerUser: Request body:", body);
 
-  // Проверяем сериализацию
   let jsonBody;
   try {
     jsonBody = JSON.stringify(body);
@@ -176,12 +173,12 @@ export function registerUser({ login, password, name, imageUrl }) {
     throw new Error("Ошибка формирования JSON");
   }
 
-  // Отправляем запрос
   console.log("registerUser: Sending request...");
   return fetch(baseHost + "/api/user", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json; charset=utf-8",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
     },
     body: jsonBody,
   })
