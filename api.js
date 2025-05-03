@@ -124,36 +124,39 @@ export function registerUser({ login, password, name, imageUrl }) {
     imageUrlType: typeof imageUrl,
   });
 
-  // Минимальная валидация с ===
-  if (!login || typeof login !== "string") {
-    console.error("registerUser: Invalid login:", login);
-    throw new Error("Логин должен быть строкой");
+  // Очистка данных
+  const cleanLogin = (login || "").trim();
+  const cleanPassword = (password || "").trim();
+  const cleanName = (name || "").trim();
+
+  // Валидация
+  if (!cleanLogin) {
+    throw new Error("Логин обязателен");
   }
-  if (!password || typeof password !== "string") {
-    console.error("registerUser: Invalid password:", password);
-    throw new Error("Пароль должен быть строкой");
+  if (!cleanPassword) {
+    throw new Error("Пароль обязателен");
   }
-  if (!name || typeof name !== "string") {
-    console.error("registerUser: Invalid name:", name);
-    throw new Error("Имя должно быть строкой");
+  if (!cleanName) {
+    throw new Error("Имя обязательно");
   }
 
-  const jsonBody = JSON.stringify({
-    login,
-    password,
-    name,
-    imageUrl,
-  });
-  console.log("registerUser: JSON body:", jsonBody);
+  // Формирование тела запроса
+  const body = {
+    login: cleanLogin,
+    password: cleanPassword,
+    name: cleanName,
+    imageUrl: (imageUrl || null)?.trim(), // Обработка imageUrl
+  };
 
-  console.log("registerUser: Preparing request...");
+  console.log("registerUser: Sending request body:", JSON.stringify(body, null, 2));
+
   return fetch(baseHost + "/api/user", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json",
     },
-    body: jsonBody,
+    body: JSON.stringify(body),
   })
     .then((response) => {
       console.log("registerUser: Response status:", response.status);
