@@ -124,56 +124,29 @@ export function registerUser({ login, password, name, imageUrl }) {
     imageUrlType: typeof imageUrl,
   });
 
-  if (login == null) {
-    console.error("registerUser: Login is null or undefined:", login);
-    throw new Error("Логин не может быть null или undefined");
-  }
-  if (password == null) {
-    console.error("registerUser: Password is null or undefined:", password);
-    throw new Error("Пароль не может быть null или undefined");
-  }
-  if (name == null) {
-    console.error("registerUser: Name is null or undefined:", name);
-    throw new Error("Имя не может быть null или undefined");
-  }
-  if (typeof login !== "string" || !login.trim()) {
+  // Минимальная валидация с ===
+  if (!login || typeof login !== "string") {
     console.error("registerUser: Invalid login:", login);
-    throw new Error("Логин должен быть непустой строкой");
+    throw new Error("Логин должен быть строкой");
   }
-  if (typeof password !== "string" || !password.trim() || password.length < 6) {
+  if (!password || typeof password !== "string") {
     console.error("registerUser: Invalid password:", password);
-    throw new Error("Пароль должен быть непустой строкой длиной не менее 6 символов");
+    throw new Error("Пароль должен быть строкой");
   }
-  if (typeof name !== "string" || !name.trim()) {
+  if (!name || typeof name !== "string") {
     console.error("registerUser: Invalid name:", name);
-    throw new Error("Имя должно быть непустой строкой");
-  }
-  if (imageUrl && typeof imageUrl !== "string") {
-    console.error("registerUser: Invalid imageUrl:", imageUrl);
-    throw new Error("URL изображения должен быть строкой или пустым");
+    throw new Error("Имя должно быть строкой");
   }
 
-  const body = {
-    login: login.trim(),
-    password: password.trim(),
-    name: name.trim(),
-  };
-  if (imageUrl) {
-    body.imageUrl = imageUrl.trim();
-  }
+  const jsonBody = JSON.stringify({
+    login,
+    password,
+    name,
+    imageUrl,
+  });
+  console.log("registerUser: JSON body:", jsonBody);
 
-  console.log("registerUser: Request body:", body);
-
-  let jsonBody;
-  try {
-    jsonBody = JSON.stringify(body);
-    console.log("registerUser: JSON body:", jsonBody);
-  } catch (error) {
-    console.error("registerUser: JSON serialization error:", error);
-    throw new Error("Ошибка формирования JSON");
-  }
-
-  console.log("registerUser: Sending request...");
+  console.log("registerUser: Preparing request...");
   return fetch(baseHost + "/api/user", {
     method: "POST",
     headers: {
