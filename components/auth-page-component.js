@@ -2,12 +2,10 @@ import { renderHeaderComponent } from "./header-component.js";
 import { loginUser, registerUser, uploadImage } from "../api.js";
 
 export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
-  console.log("renderAuthPageComponent called");
   let isLoginMode = true;
-  let imageUrl = "";
+  let imageUrl = ""; // будет заполнено при загрузке изображения
 
   const renderForm = () => {
-    console.log("Rendering auth form, isLoginMode:", isLoginMode);
     const appHtml = `
       <div class="page-container">
         <div class="header-container"></div>
@@ -57,46 +55,29 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
     const passwordInputElement = document.getElementById("password-input");
     const nameInputElement = document.getElementById("name-input");
     const imageInputElement = document.getElementById("image-input");
-    const loginButtonElement = document.getElementById("login-button");
     const registerButtonElement = document.getElementById("register-button");
+    const loginButtonElement = document.getElementById("login-button");
     const toggleButtonElement = document.getElementById("toggle-button");
     const authErrorMessageElement = document.querySelector(".form-error");
-
-    console.log("Form elements:", {
-      loginInputElement,
-      passwordInputElement,
-      nameInputElement,
-      imageInputElement,
-      loginButtonElement,
-      registerButtonElement,
-      toggleButtonElement,
-      authErrorMessageElement,
-    });
 
     const setError = (message) => {
       if (authErrorMessageElement) {
         authErrorMessageElement.textContent = message;
-      } else {
-        console.error("authErrorMessageElement not found");
       }
     };
 
-    if (toggleButtonElement) {
-      toggleButtonElement.addEventListener("click", () => {
-        console.log("Toggle button clicked, switching to isLoginMode:", !isLoginMode);
-        isLoginMode = !isLoginMode;
-        imageUrl = "";
-        renderForm();
-      });
-    }
+    toggleButtonElement.addEventListener("click", () => {
+      isLoginMode = !isLoginMode;
+      imageUrl = "";
+      renderForm();
+    });
 
     if (loginButtonElement) {
       loginButtonElement.addEventListener("click", () => {
-        console.log("Login button in form clicked");
         setError("");
 
-        const login = loginInputElement?.value?.trim();
-        const password = passwordInputElement?.value?.trim();
+        const login = loginInputElement?.value?.trim() || "";
+        const password = passwordInputElement?.value?.trim() || "";
 
         if (!login) {
           setError("Введите логин");
@@ -108,17 +89,14 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
           return;
         }
 
-        console.log("Attempting login with:", { login, password });
         loginUser({ login, password })
           .then((userData) => {
-            console.log("Login successful, user:", userData);
             if (!userData.user?.token) {
               throw new Error("Токен не получен");
             }
             setUser(userData.user);
           })
           .catch((error) => {
-            console.error("Login error:", error);
             setError(error.message);
           });
       });
@@ -126,52 +104,45 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
 
     if (registerButtonElement) {
       registerButtonElement.addEventListener("click", () => {
-        console.log("Register: Button clicked");
         setError("");
-    
+
         const login = loginInputElement?.value?.trim() || "";
         const password = passwordInputElement?.value?.trim() || "";
         const name = nameInputElement?.value?.trim() || "";
-    
-        console.log("Register: Input values:", { login, password, name, imageUrl });
-        console.log("Register: Input types:", {
-          loginType: typeof login,
-          passwordType: typeof password,
-          nameType: typeof name,
-          imageUrlType: typeof imageUrl,
-        });
-    
+
         if (!login) {
           setError("Введите логин");
           return;
         }
-    
+
         if (!password) {
           setError("Введите пароль");
           return;
         }
-    
+
         if (!name) {
           setError("Введите имя");
           return;
         }
-    
-        console.log("Register: Attempting registration with:", { login, password, name, imageUrl });
-        registerUser({
+
+        const data = {
           login,
           password,
           name,
-          imageUrl,
-        })
+        };
+
+        if (imageUrl) {
+          data.imageUrl = imageUrl;
+        }
+
+        registerUser(data)
           .then((userData) => {
-            console.log("Register: Registration successful, user:", userData);
             if (!userData.user?.token) {
               throw new Error("Токен не получен");
             }
             setUser(userData.user);
           })
           .catch((error) => {
-            console.error("Register: Error:", error);
             setError(error.message);
           });
       });
@@ -181,18 +152,15 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
       imageInputElement.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (file) {
-          console.log("Selected image file:", file.name);
           imageInputElement.disabled = true;
           setError("Загрузка изображения...");
           uploadImage({ file })
             .then((data) => {
               imageUrl = data.fileUrl;
-              console.log("Image uploaded, URL:", imageUrl);
               setError("");
               imageInputElement.disabled = false;
             })
-            .catch((error) => {
-              console.error("Image upload error:", error);
+            .catch(() => {
               setError("Ошибка загрузки изображения");
               imageInputElement.disabled = false;
             });

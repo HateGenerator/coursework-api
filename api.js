@@ -1,5 +1,5 @@
 const personalKey = "prod";
-const baseHost = "https://webdev-hw-api.vercel.app";
+const baseHost = "https://wedev-api.sky.pro";
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 
 export function getPosts({ token }) {
@@ -115,70 +115,33 @@ export function dislikePost({ token, postId }) {
 }
 
 export function registerUser({ login, password, name, imageUrl }) {
-  console.log("registerUser: Function called");
-  console.log("registerUser: Raw input values:", { login, password, name, imageUrl });
-  console.log("registerUser: Input types:", {
-    loginType: typeof login,
-    passwordType: typeof password,
-    nameType: typeof name,
-    imageUrlType: typeof imageUrl,
-  });
-
-  // Очистка данных
-  const cleanLogin = (login || "").trim();
-  const cleanPassword = (password || "").trim();
-  const cleanName = (name || "").trim();
-
-  // Валидация
-  if (!cleanLogin) {
-    throw new Error("Логин обязателен");
-  }
-  if (!cleanPassword) {
-    throw new Error("Пароль обязателен");
-  }
-  if (!cleanName) {
-    throw new Error("Имя обязательно");
-  }
-
-  // Формирование тела запроса
   const body = {
-    login: cleanLogin,
-    password: cleanPassword,
-    name: cleanName,
-    imageUrl: (imageUrl || null)?.trim(), // Обработка imageUrl
+    login,
+    password,
+    name,
   };
 
-  console.log("registerUser: Sending request body:", JSON.stringify(body, null, 2));
+  if (imageUrl) {
+    body.imageUrl = imageUrl;
+  }
 
-  return fetch(baseHost + "/api/user", {
+  return fetch("https://wedev-api.sky.pro/api/user", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
     body: JSON.stringify(body),
-  })
-    .then((response) => {
-      console.log("registerUser: Response status:", response.status);
-      if (response.status === 400) {
-        return response.json().then((data) => {
-          console.log("registerUser: Error response:", data);
-          throw new Error(data.error || "Ошибка регистрации");
-        });
-      }
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("registerUser: Error:", error);
-      throw error;
-    });
+  }).then((response) => {
+    if (response.status === 400) {
+      return response.json().then((data) => {
+        throw new Error(data.error || "Ошибка регистрации");
+      });
+    }
+    if (!response.ok) {
+      throw new Error(`Ошибка сервера: ${response.status}`);
+    }
+    return response.json();
+  });
 }
 
 export function loginUser({ login, password }) {
-  console.log("loginUser called with:", { login, password });
   return fetch(baseHost + "/api/user/login", {
     method: "POST",
     headers: {
@@ -188,45 +151,32 @@ export function loginUser({ login, password }) {
       login,
       password,
     }),
-  })
-    .then((response) => {
-      console.log("loginUser response status:", response.status);
-      if (response.status === 400) {
-        return response.json().then((data) => {
-          throw new Error(data.error || "Неверный логин или пароль");
-        });
-      }
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      console.error("loginUser error:", error);
-      throw error;
-    });
+  }).then((response) => {
+    if (response.status === 400) {
+      return response.json().then((data) => {
+        throw new Error(data.error || "Неверный логин или пароль");
+      });
+    }
+    if (!response.ok) {
+      throw new Error(`Ошибка сервера: ${response.status}`);
+    }
+    return response.json();
+  });
 }
 
 export function uploadImage({ file }) {
-  console.log("uploadImage called with file:", file.name);
   const data = new FormData();
   data.append("file", file);
 
   return fetch(baseHost + "/api/upload/image", {
     method: "POST",
     body: data,
-  })
-    .then((response) => {
-      console.log("uploadImage response status:", response.status);
-      if (response.status !== 200) {
-        throw new Error("Ошибка загрузки изображения");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("uploadImage data:", data);
-      return data; // Возвращаем весь объект { fileUrl }
-    });
+  }).then((response) => {
+    if (response.status !== 200) {
+      throw new Error("Ошибка загрузки изображения");
+    }
+    return response.json();
+  });
 }
 
 export function verifyToken({ token }) {
