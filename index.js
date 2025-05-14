@@ -1,5 +1,5 @@
 console.log("Starting index.js");
-import { getPosts, getUserPosts, verifyToken } from "./api.js";
+import { getPosts, getUserPosts, } from "./api.js";
 import { renderAddPostPageComponent } from "./components/add-post-page-component.js";
 import { renderAuthPageComponent } from "./components/auth-page-component.js";
 import {
@@ -37,20 +37,20 @@ export const logout = () => {
 };
 
 // Проверка токена при старте
-if (user && user.token) {
-  console.log("Verifying token at startup...");
-  verifyToken({ token: `Bearer ${user.token}` })
-    .then((isValid) => {
-      if (!isValid) {
-        console.log("Invalid token, logging out");
-        logout();
-      }
-    })
-    .catch((error) => {
-      console.error("Token verification error:", error);
-      logout();
-    });
-}
+// if (user && user.token) {
+//   console.log("Verifying token at startup...");
+//   verifyToken({ token: `Bearer ${user.token}` })
+//     .then((isValid) => {
+//       if (!isValid) {
+//         console.log("Invalid token, logging out");
+//         logout();
+//       }
+//     })
+//     .catch((error) => {
+//       console.error("Token verification error:", error);
+//       logout();
+//     });
+// }
 
 export const goToPage = (newPage, data) => {
   console.log("goToPage called with:", { newPage, data });
