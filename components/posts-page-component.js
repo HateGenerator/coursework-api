@@ -2,24 +2,17 @@ import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
 import { posts, goToPage, user } from "../index.js";
 import { likePost, dislikePost } from "../api.js";
-import { formatDistanceToNow } from "https://cdn.jsdelivr.net/npm/date-fns@2.29.3/+esm";
-import ru from "https://cdn.jsdelivr.net/npm/date-fns@2.29.3/locale/ru/+esm";
 
 export function renderPostsPageComponent({ appEl }) {
-  console.log("renderPostsPageComponent called");
   const renderPosts = () => {
     console.log("Rendering posts:", posts);
+
     const postsHtml = posts
       .map((post) => {
-        let createdAt = post.createdAt;
-        try {
-          createdAt = formatDistanceToNow(new Date(post.createdAt), {
-            locale: ru,
-            addSuffix: true,
-          });
-        } catch (error) {
-          console.error("Ошибка форматирования даты:", error);
-        }
+        // Упрощённый вывод даты
+        const date = new Date(post.createdAt);
+        const createdAt = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
         return `
           <li class="post">
             <div class="post-header" data-user-id="${post.user.id}">
@@ -30,7 +23,7 @@ export function renderPostsPageComponent({ appEl }) {
               <img class="post-image" src="${post.imageUrl}" alt="Post image">
             </div>
             <div class="post-likes">
-              <button data-post-id="${post.id}" class="like-button">
+              <button data-post-id="${post.id}" class="like-button ${post.isLiked ? "liked" : ""}">
                 <img src="./assets/images/like-${post.isLiked ? "active" : "not-active"}.svg">
               </button>
               <p class="post-likes-text">
@@ -42,6 +35,10 @@ export function renderPostsPageComponent({ appEl }) {
               ${post.description}
             </p>
             <p class="post-date">${createdAt}</p>
+
+            ${user && post.user.login === user.login ? `
+              <button class="delete-button" data-post-id="${post.id}">Удалить</button>
+            ` : ""}
           </li>`;
       })
       .join("");
@@ -52,42 +49,79 @@ export function renderPostsPageComponent({ appEl }) {
         <ul class="posts">${postsHtml}</ul>
       </div>`;
 
-    console.log("Setting appEl.innerHTML");
     appEl.innerHTML = appHtml;
 
-    console.log("Rendering header component");
     renderHeaderComponent({
       element: document.querySelector(".header-container"),
+      user,
+      goToPage,
     });
 
+    // Переход к пользователю
     for (let userEl of document.querySelectorAll(".post-header")) {
       userEl.addEventListener("click", () => {
-        console.log("Navigating to user posts page:", userEl.dataset.userId);
-        goToPage(USER_POSTS_PAGE, { userId: userEl.dataset.userId });
+        const userId = userEl.dataset.userId;
+        console.log("Navigating to user posts page:", userId);
+        goToPage(USER_POSTS_PAGE, { userId });
       });
     }
 
-    if (user) {
-      for (let likeButton of document.querySelectorAll(".like-button")) {
-        likeButton.addEventListener("click", () => {
-          const postId = likeButton.dataset.postId;
-          const post = posts.find((p) => p.id === postId);
-          const token = user ? `Bearer ${user.token}` : undefined;
+    // Лайки
+  for (let likeButton of document.querySelectorAll(".like-button")) {
+  likeButton.addEventListener("click", () => {
+    const postId = likeButton.dataset.postId;
+    const post = posts.find((p) => p.id === postId);
+    const token = user ? `Bearer ${user.token}` : undefined;
 
-          console.log("Liking/disliking post:", postId);
-          const action = post.isLiked ? dislikePost : likePost;
-          action({ token, postId })
-            .then((updatedPost) => {
-              const index = posts.findIndex((p) => p.id === postId);
-              posts[index] = updatedPost.post;
-              renderPosts();
-            })
-            .catch((error) => {
-              console.error("Ошибка при изменении лайка:", error);
-              alert("Ошибка при изменении лайка. Попробуйте снова.");
-            });
-        });
+    console.log("Liking/disliking post:", postId);
+
+    const action = post.isLiked ? dislikePost : likePost;
+
+    action({ token, postId }).then(({ post: updatedPost }) => {
+      const index = posts.findIndex((p) => p.id === postId);
+      posts[index] = updatedPost;
+
+      // Получаем элемент из DOM
+      const buttonEl = document.querySelector(`[data-post-id="${postId}"]`);
+      const imageEl = buttonEl?.querySelector("img");
+
+      if (imageEl) {
+        // Меняем изображение на active/not-active
+        imageEl.src = "./assets/images/like-" + (updatedPost.isLiked ? "active" : "not-active") + ".svg";
+
+        // Запускаем анимацию пульсации
+        imageEl.classList.add("liked");
+        setTimeout(() => imageEl.classList.remove("liked"), 300);
       }
+
+      renderPosts(); // Перерисовываем посты для обновления количества лайков
+    });
+  });
+}
+
+    // Удаление поста
+    for (let deleteButton of document.querySelectorAll(".delete-button")) {
+      deleteButton.addEventListener("click", (event) => {
+        const postId = deleteButton.dataset.postId;
+
+        if (!confirm("Вы точно хотите удалить пост?")) return;
+
+        fetch(`https://wedev-api.sky.pro/api/v1/prod/instapro/ ${postId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        })
+          .then(() => {
+            const index = posts.findIndex((p) => p.id === postId);
+            posts.splice(index, 1);
+            renderPosts();
+          })
+          .catch((error) => {
+            console.error("Ошибка удаления поста:", error);
+            alert("Не удалось удалить пост");
+          });
+      });
     }
   };
 
