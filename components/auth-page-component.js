@@ -69,6 +69,7 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
     toggleButtonElement.addEventListener("click", () => {
       isLoginMode = !isLoginMode;
       imageUrl = "";
+      setError(""); // Сбрасываем ошибку при смене формы
       renderForm();
     });
 
@@ -134,6 +135,8 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
         if (imageUrl) {
           data.imageUrl = imageUrl;
         }
+
+        console.log("Register: Sending data:", data); // Отладочный лог
 
         registerUser(data)
           .then((userData) => {

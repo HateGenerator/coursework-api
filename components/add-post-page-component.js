@@ -35,27 +35,34 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
       },
     });
 
-    document.getElementById("add-button").addEventListener("click", () => {
-      const description = document.getElementById("description-input").value.trim();
-      if (!description) {
-        alert("Введите описание поста");
-        return;
-      }
-      if (!imageUrl) {
-        alert("Выберите изображение");
-        return;
-      }
+document.getElementById("add-button").addEventListener("click", () => {
+  const description = document.getElementById("description-input").value.trim();
+  
+  console.log("Description:", description);
+  console.log("imageUrl:", imageUrl);
+  console.log("token:", user?.token);
+  console.log("Текущий пользователь:", user);
+  if (!description) {
+    alert("Введите описание поста");
+    return;
+  }
+  if (!imageUrl) {
+    alert("Выберите изображение");
+    return;
+  }
 
-      const token = user ? `Bearer ${user.token}` : undefined;
-      addPost({ token, description, imageUrl })
-        .then(() => {
-          goToPage(POSTS_PAGE); // Переход на страницу постов
-        })
-        .catch((error) => {
-          console.error("Ошибка при добавлении поста:", error);
-          alert("Ошибка при добавлении поста. Попробуйте снова.");
-        });
+  const token = user && user.token ? `Bearer ${user.token}` : undefined;
+  console.log("Authorization token:", token);
+
+  addPost({ token, description, imageUrl })
+    .then(() => {
+      goToPage(POSTS_PAGE);
+    })
+    .catch((error) => {
+      console.error("Ошибка при добавлении поста:", error);
+      alert("Ошибка при добавлении поста. Попробуйте снова.");
     });
+});
   };
 
   render();

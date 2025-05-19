@@ -60,24 +60,34 @@ export function getUserPosts({ token, userId }) {
 
 export function addPost({ token, description, imageUrl }) {
   console.log("addPost called with:", { token, description, imageUrl });
+
+  if (!description || !imageUrl) {
+    throw new Error("Описание или URL изображения не переданы");
+  }
+
   return fetch(postsHost, {
     method: "POST",
     headers: {
       Authorization: token,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ description, imageUrl }),
-  })
-    .then((response) => {
-      console.log("addPost response status:", response.status);
-      if (response.status === 400) {
-        throw new Error("Некорректные данные поста");
-      }
-      if (response.status === 401) {
-        throw new Error("Нет авторизации");
-      }
-      return response.json();
-    });
+    body: JSON.stringify({
+      description,
+      imageUrl,
+    }),
+  }).then((response) => {
+    if (response.status === 400) {
+      return response.json().then((data) => {
+        throw new Error(data.error || "Некорректные данные поста");
+      });
+    }
+    if (response.status === 401) {
+      throw new Error("Нет авторизации");
+    }
+    if (!response.ok) {
+      throw new Error(`Ошибка сервера: ${response.status}`);
+    }
+    return response.json();
+  });
 }
 
 export function likePost({ token, postId }) {
