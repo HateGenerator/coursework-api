@@ -3,7 +3,6 @@ const baseHost = "https://wedev-api.sky.pro";
 const postsHost = `${baseHost}/api/v1/${personalKey}/instapro`;
 
 export function getPosts({ token }) {
-  console.log("getPosts called with token:", token);
   const headers = {};
   if (token && token !== "Bearer undefined") {
     headers.Authorization = token;
@@ -13,7 +12,6 @@ export function getPosts({ token }) {
     headers,
   })
     .then((response) => {
-      console.log("getPosts response status:", response.status);
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
@@ -25,13 +23,11 @@ export function getPosts({ token }) {
       return response.json();
     })
     .then((data) => {
-      console.log("getPosts data:", data);
       return data.posts;
     });
 }
 
 export function getUserPosts({ token, userId }) {
-  console.log("getUserPosts called with token:", token, "userId:", userId);
   const headers = {};
   if (token && token !== "Bearer undefined") {
     headers.Authorization = token;
@@ -41,7 +37,6 @@ export function getUserPosts({ token, userId }) {
     headers,
   })
     .then((response) => {
-      console.log("getUserPosts response status:", response.status);
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
@@ -53,13 +48,11 @@ export function getUserPosts({ token, userId }) {
       return response.json();
     })
     .then((data) => {
-      console.log("getUserPosts data:", data);
       return data.posts;
     });
 }
 
 export function addPost({ token, description, imageUrl }) {
-  console.log("addPost called with:", { token, description, imageUrl });
 
   if (!description || !imageUrl) {
     throw new Error("Описание или URL изображения не переданы");
@@ -91,7 +84,6 @@ export function addPost({ token, description, imageUrl }) {
 }
 
 export function likePost({ token, postId }) {
-  console.log("likePost called with:", { token, postId });
   return fetch(`${postsHost}/${postId}/like`, {
     method: "POST",
     headers: {
@@ -99,7 +91,6 @@ export function likePost({ token, postId }) {
     },
   })
     .then((response) => {
-      console.log("likePost response status:", response.status);
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
@@ -108,7 +99,6 @@ export function likePost({ token, postId }) {
 }
 
 export function dislikePost({ token, postId }) {
-  console.log("dislikePost called with:", { token, postId });
   return fetch(`${postsHost}/${postId}/dislike`, {
     method: "POST",
     headers: {
@@ -116,7 +106,6 @@ export function dislikePost({ token, postId }) {
     },
   })
     .then((response) => {
-      console.log("dislikePost response status:", response.status);
       if (response.status === 401) {
         throw new Error("Нет авторизации");
       }
@@ -187,7 +176,6 @@ export function uploadImage({ file }) {
 }
 
 export function verifyToken({ token }) {
-  console.log("verifyToken called with:", token);
   return fetch(baseHost + "/api/user/me", {
     method: "GET",
     headers: {
@@ -195,7 +183,6 @@ export function verifyToken({ token }) {
     },
   })
     .then((response) => {
-      console.log("verifyToken response status:", response.status);
       return response.status === 200;
     })
     .catch((error) => {

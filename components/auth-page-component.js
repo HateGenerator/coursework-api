@@ -136,8 +136,6 @@ export function renderAuthPageComponent({ appEl, setUser, user, goToPage }) {
           data.imageUrl = imageUrl;
         }
 
-        console.log("Register: Sending data:", data); // Отладочный лог
-
         registerUser(data)
           .then((userData) => {
             if (!userData.user?.token) {

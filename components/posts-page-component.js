@@ -3,10 +3,18 @@ import { renderHeaderComponent } from "./header-component.js";
 import { posts, goToPage, user } from "../index.js";
 import { likePost, dislikePost } from "../api.js";
 
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, (match) => ({
+    "&": "&amp;",
+    "<": "<",
+    ">": ">",
+    "'": "&#39;",
+    '"': "&quot;",
+  }[match]));
+}
+
 export function renderPostsPageComponent({ appEl }) {
   const renderPosts = () => {
-    console.log("Rendering posts:", posts);
-
     const postsHtml = posts
       .map((post) => {
         // Упрощённый вывод даты
@@ -32,7 +40,7 @@ export function renderPostsPageComponent({ appEl }) {
             </div>
             <p class="post-text">
               <span class="user-name">${post.user.name}</span>
-              ${post.description}
+              ${escapeHTML(post.description)}
             </p>
             <p class="post-date">${createdAt}</p>
 
@@ -61,7 +69,6 @@ export function renderPostsPageComponent({ appEl }) {
     for (let userEl of document.querySelectorAll(".post-header")) {
       userEl.addEventListener("click", () => {
         const userId = userEl.dataset.userId;
-        console.log("Navigating to user posts page:", userId);
         goToPage(USER_POSTS_PAGE, { userId });
       });
     }
@@ -72,8 +79,6 @@ export function renderPostsPageComponent({ appEl }) {
     const postId = likeButton.dataset.postId;
     const post = posts.find((p) => p.id === postId);
     const token = user ? `Bearer ${user.token}` : undefined;
-
-    console.log("Liking/disliking post:", postId);
 
     const action = post.isLiked ? dislikePost : likePost;
 

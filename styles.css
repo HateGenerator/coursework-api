@@ -1,6 +1,25 @@
+/* === Общие стили === */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #fafafa;
+  color: #222;
+}
+
+/* === Контейнер страницы === */
+
 .page-container {
+  max-width: 600px;
+  margin: 0 auto;
   padding: 0 20px;
 }
+
+/* === Шапка === */
 
 .page-header {
   display: flex;
@@ -10,6 +29,7 @@
   padding: 20px 16px;
   margin-left: -20px;
   margin-right: -20px;
+  background-color: #fff;
 }
 
 .logo {
@@ -17,10 +37,6 @@
   font-size: 28px;
   cursor: pointer;
   width: 130px;
-}
-
-.header-container {
-  margin-bottom: 8px;
 }
 
 .header-button {
@@ -31,6 +47,7 @@
   line-height: 18px;
   font-weight: 500;
   cursor: pointer;
+  color: #000;
 }
 
 .logout-button {
@@ -38,121 +55,23 @@
   text-align: right;
 }
 
-.posts {
-  display: flex;
-  flex-direction: column;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.post-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-.post-header__user-image {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 40px;
-  margin-right: 10px;
-}
-
-.post-image-container {
-  margin-left: -20px;
-  margin-right: -20px;
-  height: 500px;
-  display: flex;
-  justify-content: center;
-  background-color: #e0e0e0;
-}
-
-.post-image {
-  width: 100%;
-  height: 100%;
-  max-width: 500px;
-  object-fit: cover;
-}
-
-.post-likes {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.like-button {
-  border: none;
-  background-color: transparent;
-  padding: 8px;
-  padding-left: 0px;
-  padding-bottom: 5px;
-  cursor: pointer;
-}
-
-.user-name {
-  font-weight: 500;
-}
-
-.post-text {
-  font-size: 14px;
-  line-height: 18px;
-  margin-top: 5px;
-}
-
-.post-date {
-  color: #8a8a8a;
-}
-
-.post + .post {
-  margin-top: 20px;
-}
-
-.posts-user-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.posts-user-header__user-image {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 40px;
-  margin-right: 10px;
-}
-
-.posts-user-header__user-name {
-  font-size: 28px;
-  line-height: 35px;
-}
-
-.loading-page {
-  display: flex;
-  justify-content: center;
-  margin-top: 100px;
-}
-
-.add-post-sign {
-  background-image: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 122.88 122.88'%3E%3Ctitle%3Eadd%3C/title%3E%3Cpath d='M61.44,0A61.46,61.46,0,1,1,18,18,61.25,61.25,0,0,1,61.44,0ZM88.6,56.82v9.24a4,4,0,0,1-4,4H70V84.62a4,4,0,0,1-4,4H56.82a4,4,0,0,1-4-4V70H38.26a4,4,0,0,1-4-4V56.82a4,4,0,0,1,4-4H52.84V38.26a4,4,0,0,1,4-4h9.24a4,4,0,0,1,4,4V52.84H84.62a4,4,0,0,1,4,4Zm8.83-31.37a50.92,50.92,0,1,0,14.9,36,50.78,50.78,0,0,0-14.9-36Z'/%3E%3C/svg%3E");
-  height: 30px;
-  width: 30px;
-}
+/* === Форма регистрации/авторизации === */
 
 .form {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  gap: 16px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
 }
 
 .form-title {
   font-size: 28px;
   line-height: 35px;
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .form-inputs {
@@ -161,66 +80,118 @@
   gap: 10px;
 }
 
+.input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.button {
+  padding: 12px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.button--link {
+  background-color: transparent;
+  color: #000;
+  font-size: 14px;
+  margin-top: 0;
+}
+
+.form-buttons {
+  margin-top: 16px;
+  text-align: center;
+}
+
 .form-error {
   color: red;
+  font-size: 14px;
+  text-align: center;
 }
 
-.form-footer {
-  margin-top: 50px;
+/* === Посты === */
+
+.posts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  gap: 20px;
 }
 
-.form-footer-title {
-  text-align: center;
+.post {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.file-upload-image-conrainer {
+.post-header {
   display: flex;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  cursor: pointer;
 }
 
-.file-upload-image {
-  width: 100px;
-  height: 100px;
+.post-header__user-image {
+  width: 40px;
+  height: 40px;
   object-fit: cover;
-  margin-right: 10px;
-  border: 1px solid gray;
-  border-radius: 5px;
+  border-radius: 50%;
 }
 
-.file-upload-label {
-  display: inline-block;
-  box-sizing: border-box;
+.post-header__user-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.post-image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.post-image {
   width: 100%;
-  text-align: center;
+  height: auto;
+  display: block;
 }
 
-.error-message {
-  background-color: #ffe6e6;
-  color: #d32f2f;
-  padding: 10px;
-  margin: 10px;
-  border: 1px solid #d32f2f;
-  border-radius: 4px;
-  text-align: center;
+.post-likes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-/* Анимация лайка */
+.like-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 .like-button img {
   transition: transform 0.2s ease, filter 0.2s ease;
   width: 24px;
   height: 24px;
 }
 
-/* Увеличение при наведении */
 .like-button:hover img {
   transform: scale(1.2);
   filter: brightness(0.9) saturate(1.2);
 }
 
-/* Пульсация при клике */
 .like-button img.liked {
   animation: pulse 0.3s ease;
   filter: none;
@@ -230,4 +201,135 @@
   0% { transform: scale(1); }
   50% { transform: scale(1.2); }
   100% { transform: scale(1); }
+}
+
+.post-likes-text {
+  font-size: 14px;
+  margin: 0;
+}
+
+.post-text {
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 10px 0;
+}
+
+.user-name {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.post-date {
+  font-size: 12px;
+  color: #888;
+  margin-top: 8px;
+}
+
+.delete-button {
+  margin-top: 12px;
+  background: transparent;
+  color: red;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* === Загрузка поста === */
+
+.add-post-sign {
+  background-image: url("data:image/svg+xml,%3Csvg id='Layer_1' data-name='Layer 1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 122.88 122.88'%3E%3Ctitle%3Eadd%3C/title%3E%3Cpath d='M61.44,0A61.46,61.46,0,1,1,18,18,61.25,61.25,0,0,1,61.44,0ZM88.6,56.82v9.24a4,4,0,0,1-4,4H70V84.62a4,4,0,0,1-4,4H56.82a4,4,0,0,1-4-4V70H38.26a4,4,0,0,1-4-4V56.82a4,4,0,0,1,4-4H52.84V38.26a4,4,0,0,1,4-4h9.24a4,4,0,0,1,4,4V52.84H84.62a4,4,0,0,1,4,4Zm8.83-31.37a50.92,50.92,0,1,0,14.9,36,50.78,50.78,0,0,0-14.9-36Z'/%3E%3C/svg%3E");
+  height: 30px;
+  width: 30px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+/* === Форма добавления поста === */
+
+.upload-image-container {
+  margin-bottom: 16px;
+}
+
+.file-upload-label {
+  display: inline-block;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-upload-label:hover {
+  background-color: #f5f5f5;
+}
+
+.file-upload-image-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.file-upload-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 100px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* === Ошибки и уведомления === */
+
+.error-message {
+  background-color: #ffe6e6;
+  color: #d32f2f;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #d32f2f;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* === Адаптивность (мобильные) === */
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 0 10px;
+  }
+
+  .post-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .post-header__user-name {
+    font-size: 16px;
+  }
+
+  .post-image {
+    width: 100%;
+    height: auto;
+  }
+
+  .like-button img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .delete-button {
+    font-size: 14px;
+  }
 }

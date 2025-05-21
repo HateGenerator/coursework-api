@@ -38,10 +38,6 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
 document.getElementById("add-button").addEventListener("click", () => {
   const description = document.getElementById("description-input").value.trim();
   
-  console.log("Description:", description);
-  console.log("imageUrl:", imageUrl);
-  console.log("token:", user?.token);
-  console.log("Текущий пользователь:", user);
   if (!description) {
     alert("Введите описание поста");
     return;
@@ -52,7 +48,7 @@ document.getElementById("add-button").addEventListener("click", () => {
   }
 
   const token = user && user.token ? `Bearer ${user.token}` : undefined;
-  console.log("Authorization token:", token);
+
 
   addPost({ token, description, imageUrl })
     .then(() => {
